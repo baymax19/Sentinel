@@ -48,6 +48,7 @@ else
 fi
 
 cd $HOME;
+ss-server -s 0.0.0.0 -p 8388 -m aes-256-cfb -a root -k shadowsocks -u --fast-open
 nohup redis-server >> /dev/null &
 nohup mongod >> /dev/null &
 gunicorn --reload -b 0.0.0.0:3000 --log-level DEBUG server:app &
