@@ -3,7 +3,7 @@
 > This ```Sentinel SOCKS5 Client``` is only for ```Ubuntu 16.04``` and up, if you have an Ubuntu Operating System installed on your computer, please test and report back if you were able to crack the firewall with this package or not.
 > 
 
-1. Download this binary file [sentinel-socks-client](https://github.com/sentinel-official/sentinel/raw/sentinel-socks-node/bin/sentinel-socks-client-alpha-v0.0.1)
+1. Download this binary file [sentinel-socks-client](https://github.com/sentinel-official/sentinel/raw/sentinel-socks-node/bin/sentinel-socks-v0.0.1-alpha)
 
 2. Open the Terminal and go to the folder in which the downloaded file exists (usually in the 'Downloads' folder), using ```cd ~/Downloads```
   
