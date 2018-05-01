@@ -1,62 +1,69 @@
+# coding=utf-8
 import json
 import time
+from random import choice
 
 import falcon
-import redis
 
 from ..db import db
-from ..logs import logger
-from ..vpn import Keys
+# from ..vpn import Keys
 
 
-class GenerateOVPN(object):
+class GetSockCreds(object):
     def on_post(self, req, res):
         account_addr = str(req.body['account_addr']).lower()
         vpn_addr = str(req.body['vpn_addr']).lower()
         token = str(req.body['token'])
 
-        rs = redis.Redis()
-        stored_token = rs.get(account_addr)
-        name = str(int(time.time() * (10 ** 6)))
-        if token == stored_token:
-            result = db.clients.insert_one({
-                'name': 'client' + name,
-                'account_addr': account_addr
+        client = db.clients.find_one({
+            'account_addr': account_addr,
+            'token': token
+        })
+        if client is not None:
+            name = str(int(time.time() * (10 ** 6)))
+            _ = db.clients.find_one_and_update({
+                'account_addr': account_addr,
+                'token': token
+            }, {
+                '$set': {
+                    'session_name': 'client' + name,
+                    'usage': {
+                        'up': 0,
+                        'down': 0
+                    }
+                }
             })
-            if result.inserted_id:
-                data = db.nodes.find_one({
-                    'address': vpn_addr
-                })
-                keys = Keys(name=name)
-                keys.generate()
-                message = {
-                    'success': True,
-                    'node': {
-                        'location': data['location'],
-                        'net_speed': data['net_speed'],
-                        'vpn': {
-                            'ovpn': keys.ovpn()
-                        }
-                    },
-                    'session_name': 'client' + name
-                }
-                res.status = falcon.HTTP_200
-                res.body = json.dumps(message)
-            else:
-                message = {
-                    'success': False,
-                    'message': 'Error occurred, please try again later.'
-                }
-                try:
-                    raise Exception('Client Insertion Error in Database')
-                except Exception as _:
-                    logger.send_log(message, res)
+            data = db.node.find_one({
+                'account_addr': vpn_addr
+            })
+
+            json_data=json.load(open('/root/sentinel/shell_scripts/shadowsocks.json'))
+            rand_data=choice(list(json_data['port_password'].keys()))
+
+            config_data={
+                'ip':data['ip'],
+                'port':rand_data,
+                'password':json_data['port_password'][rand_data],
+                'method':json_data['method']
+            }
+
+
+            message = {
+                'success': True,
+                'node': {
+                    'location': data['location'],
+                    'net_speed': data['net_speed'],
+                    'vpn': {
+                        'config': config_data
+                    }
+                },
+                'session_name': 'client' + name
+            }
         else:
             message = {
                 'success': False,
-                'message': 'Wrong token.'
+                'message': 'Wrong client wallet address or token.'
             }
-            try:
-                raise Exception('Session Token Mismatch')
-            except Exception as _:
-                logger.send_log(message, res)
+
+        res.status = falcon.HTTP_200
+        res.body = json.dumps(message)
