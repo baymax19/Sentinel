@@ -22,7 +22,7 @@ func init() {
 }
 
 func installDep() {
-	cmd := "sudo apt-get install python-pip"
+	cmd := "sudo apt-get install python-pip -y"
 	cmdParts := strings.Fields(cmd)
 
 	installPip := exec.Command(cmdParts[0], cmdParts[1:]...)

@@ -21,8 +21,9 @@ func init() {
 	rootCmd.AddCommand(killCmd)
 }
 
+// KillSocks5Node and config-server
 func KillSocks5Node() {
-	cmd := "sudo killall ssserver"
+	cmd := "killall ssserver"
 	cmdParts := strings.Fields(cmd)
 
 	killSocks := exec.Command(cmdParts[0], cmdParts[1:]...)
@@ -30,6 +31,15 @@ func KillSocks5Node() {
 	if err := killSocks.Start(); err != nil {
 		// fmt.Errorf("Could Not Start the Shadowsocks server: %v", err)
 		panic(err)
+	}
+
+	cmd2 := "killall config-server"
+	cmd2Parts := strings.Fields(cmd2)
+
+	killConfigServer := exec.Command(cmd2Parts[0], cmd2Parts[1:]...)
+
+	if err2 := killConfigServer.Start(); err2 != nil {
+		panic(err2)
 	}
 
 	fmt.Println("killed successfully")
