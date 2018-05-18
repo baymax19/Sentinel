@@ -254,6 +254,12 @@ class Dashboard extends Component {
                 label={lang[language].VpnHistory} value="vpn_history" disabled={!this.state.isTest}>
                 <VPNHistory local_address={this.state.local_address} payVPN={this.vpnPayment.bind(this)} lang={this.props.lang} />
               </Tab>
+              <Tab label="Chat" value="chat" style={styles.enabledTabStyle}>
+                <div>
+                  <iframe src="../src/riot-v0.15.2/index.html" style={{ width: 1000, height: 481, border: 0 }}>
+                  </iframe>
+                </div>
+              </Tab>
             </Tabs>
           </div>
           {this.state.isTest ?
