@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Home from './Components/Home';
 import Create from './Components/Create';
-import Dashboard from './Components/Dashboard';
+import Dashboard from './Components/NewDashboard';
 import Authenticate from './Components/Authenticate';
 import { checkKeystore } from './Actions/AccountActions';
 const { ipcRenderer } = window.require('electron');
