@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import Home from './Components/Home';
 import Create from './Components/Create';
-import Dashboard from './Components/Dashboard';
+// import Dashboard from './Components/Dashboard';
+import Receive from './Components/Receive';
 import Authenticate from './Components/Authenticate';
-import { checkKeystore } from './Actions/authentication.action';
 import { defaultPageStyle } from './Assets/authenticate.styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -56,7 +56,7 @@ class App extends Component {
                 }
             case 'dashboard':
                 {
-                    return <Dashboard />
+                    return <Receive />
                 }
             case 'home':
                 {

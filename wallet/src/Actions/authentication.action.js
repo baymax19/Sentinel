@@ -3,7 +3,6 @@ import { B_URL } from './../Constants/constants';
 import * as types from './../Constants/action.names';
 import * as URL from './../Constants/api.routes'
 import { readFile } from './../Utils/Keystore';
-import { lang } from './../Constants/language';
 import axios from 'axios';
 
 const keythereum = require('keythereum');
@@ -11,6 +10,7 @@ const electron = window.require('electron');
 const remote = electron.remote;
 const SENT_DIR = getUserHome() + '/.sentinel';
 var ACCOUNT_ADDR = '';
+var lang = require('./../Constants/language');
 
 export const KEYSTORE_FILE = SENT_DIR + '/keystore';
 
@@ -81,6 +81,28 @@ export const createAccount = (password) => {
     }
 }
 
+export function getFreeAmount(account_addr, cb) {
+    try {
+        fetch(B_URL + '/dev/free', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                account_addr: account_addr
+            })
+        }).then(function (response) {
+            response.json().then(function (response) {
+                console.log("Free res:", response)
+                cb(response.message)
+            })
+        });
+    } catch (Err) {
+        sendError(Err);
+    }
+}
+
 export function getPrivateKey(password, language, cb) {
     readFile(KEYSTORE_FILE, function (err, data) {
         if (err) cb(err, null);
@@ -97,3 +119,18 @@ export function getPrivateKey(password, language, cb) {
     })
 }
 
+export function getAccount(cb) {
+    try {
+        readFile(KEYSTORE_FILE, function (err, data) {
+            if (err) {
+                cb(err, null);
+            } else {
+                data = JSON.parse(data);
+                ACCOUNT_ADDR = '0x' + data.address;
+                cb(null, ACCOUNT_ADDR);
+            }
+        });
+    } catch (Err) {
+        sendError(Err);
+    }
+}

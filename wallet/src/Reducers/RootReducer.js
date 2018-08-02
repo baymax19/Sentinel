@@ -4,7 +4,8 @@ import { setLanguage, createAccount, setComponent } from './beforeAuth.reducer';
 const rootReducer = combineReducers({
     setLanguage: setLanguage,
     createAccount: createAccount,
-    setComponent: setComponent
+    setComponent: setComponent,
+    isTest: true
 });
 
 export default rootReducer;
