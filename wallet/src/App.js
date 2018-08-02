@@ -3,57 +3,94 @@ import Home from './Components/Home';
 import Create from './Components/Create';
 import Dashboard from './Components/Dashboard';
 import Authenticate from './Components/Authenticate';
-import { checkKeystore } from './Actions/AccountActions';
+import { checkKeystore } from './Actions/authentication.action';
+import { defaultPageStyle } from './Assets/styles';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { setLanguage, setComponent } from './Actions/authentication.action';
+import TermsAndConditions from './Components/TermsAndConditions';
+import { readFile } from './Utils/Ethereum';
+import { KEYSTORE_FILE } from './Actions/authentication.action';
 const { ipcRenderer } = window.require('electron');
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            scene: null,
-            lang: 'en'
+            lang: 'en',
+            component: null
         }
     }
     componentWillMount = () => {
-        document.getElementById('home').style.display = 'none';
         var that = this;
-        checkKeystore(function (err) {
+        document.getElementById('home').style.display = 'none';
+
+        // Read keystore file
+        readFile(KEYSTORE_FILE, function (err) {
             setTimeout(function () {
-                if (err) that.setState({ scene: 'home' });
-                else that.setState({ scene: 'authenticate' });
+                if (err) that.props.setComponent('home');
+                else that.props.setComponent('authenticate');
             }, 3000);
         })
     }
 
     componentDidMount = () => {
-        let self = this;
         ipcRenderer.on('lang', (event, arg) => {
-            self.setState({ lang: arg })
+            this.setState({ lang: arg }, () => {
+                this.props.setLanguage(this.state.lang)
+            })
         })
     }
 
-    setComponent = (name) => {
-        this.setState({ scene: name })
-    }
-
     render() {
-        let scene = this.state.scene;
-        switch (scene) {
+        let component = this.props.setComponentResponse;
+
+        switch (component) {
             case 'create':
-                return <Create set={this.setComponent} lang={this.state.lang} />
+                {
+                    return <Create />
+                }
             case 'authenticate':
-                return <Authenticate set={this.setComponent} lang={this.state.lang} />
+                {
+                    return <Authenticate />
+                }
             case 'dashboard':
-                return <Dashboard set={this.setComponent} lang={this.state.lang} />
+                {
+                    return <Dashboard />
+                }
             case 'home':
-                return <Home set={this.setComponent} lang={this.state.lang} />
+                {
+                    return <Home />
+                }
+            case 'terms':
+                {
+                    return <TermsAndConditions />
+                }
             default:
-                return <div style={{ backgroundColor: '#1e1e1e', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                    <img src='../src/Images/logo.jpeg' style={{ width: 150, height: 150 }} />
-                    <p style={{ fontSize: 40, color: 'white' }}>Sentinel Security Group</p>
-                    <img src='../src/Images/loading_home.gif' style={{}} />
-                </div>
+                {
+                    return <div style={defaultPageStyle.division}>
+                        <img src='../src/Images/logo.jpeg' style={defaultPageStyle.image} />
+                        <p style={defaultPageStyle.p}>Sentinel Security Group</p>
+                        <img src='../src/Images/loading_home.gif' style={{}} />
+                    </div>
+                }
         }
     }
 }
-export default App;
+
+function mapDispatchToActions(dispatch) {
+    return bindActionCreators({
+        setLanguage: setLanguage,
+        setComponent: setComponent
+    }, dispatch)
+}
+
+function mapStateToProps(state) {
+    return {
+        lang: state.setLanguage,
+        createAccountResponse: state.createAccount,
+        setComponentResponse: state.setComponent
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToActions)(App);

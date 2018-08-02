@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { Dialog, FlatButton, TextField, Snackbar } from 'material-ui';
-import { getPrivateKey } from '../Actions/TransferActions';
-import { sendError } from '../Actions/AccountActions';
-let lang = require('./language');
+import { sendError, setComponent, getPrivateKey } from '../Actions/authentication.action';
+import { authenticateStyles } from './../Assets/styles'
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+let lang = require('./../Constants/language');
 
 class Authenticate extends Component {
     constructor(props) {
@@ -30,17 +32,28 @@ class Authenticate extends Component {
 
 
     submitPassword = () => {
-        this.setState({ isDisabled: 'true', statusSnack: true, statusMessage: lang[this.props.lang].CheckCre })
+        this.setState({ 
+            isDisabled: 'true', 
+            statusSnack: true, 
+            statusMessage: 
+            lang[this.props.language].CheckCre 
+        })
         let self = this;
         setTimeout(function () {
-            getPrivateKey(self.state.password, self.props.lang, function (err, privateKey) {
+            getPrivateKey(self.state.password, self.props.language, function (err, privateKey) {
                 sendError(err);
                 if (err) {
-                    self.setState({ isDisabled: false, password: '', statusSnack: false, openSnack: true, snackMessage: err.message })
+                    self.setState({ 
+                        isDisabled: false, 
+                        password: '', 
+                        statusSnack: false, 
+                        openSnack: true, 
+                        snackMessage: err.message 
+                    })
                 }
                 else {
                     self.setState({ statusSnack: false, password: '' })
-                    self.set('dashboard');
+                    self.props.setComponent('dashboard');
                 }
             })
         }, 500);
@@ -53,20 +66,20 @@ class Authenticate extends Component {
     };
 
     render() {
-        let language = this.props.lang;
+        let language = this.props.language;
         const actions = [
             <FlatButton
                 label={lang[language].Close}
                 primary={true}
                 onClick={this.closeWindow}
-                style={styles.closeButton}
+                style={authenticateStyles.closeButton}
             />,
             <FlatButton
                 label={lang[language].Submit}
                 disabled={this.state.isDisabled}
                 primary={true}
                 onClick={this.submitPassword}
-                style={styles.submitButton}
+                style={authenticateStyles.submitButton}
             />
         ]
         return (
@@ -87,7 +100,7 @@ class Authenticate extends Component {
                             onChange={(event, password) => { this.setState({ password: password }) }}
                             onKeyPress={(ev) => { if (ev.key === 'Enter') this.submitPassword() }}
                             value={this.state.password}
-                            style={styles.textFieldCreate}
+                            style={authenticateStyles.textFieldCreate}
                         />
                     </Dialog>
                     <Snackbar
@@ -95,12 +108,12 @@ class Authenticate extends Component {
                         message={this.state.snackMessage}
                         autoHideDuration={2000}
                         onRequestClose={this.snackRequestClose}
-                        style={styles.snackBarStyle}
+                        style={authenticateStyles.snackBarStyle}
                     />
                     <Snackbar
                         open={this.state.statusSnack}
                         message={this.state.statusMessage}
-                        style={styles.snackBarStyle}
+                        style={authenticateStyles.snackBarStyle}
                     />
                 </div>
             </MuiThemeProvider>
@@ -108,25 +121,15 @@ class Authenticate extends Component {
     }
 }
 
-const styles = {
-    textFieldCreate: {
-        width: '85%',
-        paddingLeft: '5%',
-        height: 40,
-        lineHeight: '18px'
-    },
-    closeButton: {
-        border: '1px solid #00bcd4',
-        borderRadius: 5
-    },
-    submitButton: {
-        border: '1px solid #00bcd4',
-        borderRadius: 5,
-        margin: '0px 20px 0px 10px'
-    },
-    snackBarStyle: {
-        marginBottom: '1%'
+function mapStateToProps(state) {
+    return {
+        language: state.setLanguage
     }
 }
 
-export default Authenticate;
+function mapDispatchToActions(dispatch) {
+    return bindActionCreators({
+        setComponent: setComponent
+    }, dispatch)
+}
+export default connect(mapStateToProps, mapDispatchToActions)(Authenticate);

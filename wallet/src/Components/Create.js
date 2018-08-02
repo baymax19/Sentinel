@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {
     Toolbar, ToolbarGroup, TextField, RaisedButton,
-    Chip, Checkbox, Paper, Snackbar, RefreshIndicator
+    Chip, Paper, Snackbar, RefreshIndicator
 } from 'material-ui';
-import { createAccount, uploadKeystore, isOnline, sendError } from '../Actions/AccountActions';
-import CopyToClipboard from 'react-copy-to-clipboard';
+import { bindActionCreators } from 'redux';
+import { createAccount, uploadKeystore, isOnline, sendError, setComponent } from '../Actions/authentication.action';
 import ReactTooltip from 'react-tooltip';
 import { setTimeout } from 'timers';
+import { createPagestyles } from './../Assets/styles';
+import { connect } from 'react-redux';
 let keythereum = require('keythereum');
-let lang = require('./language');
+let lang = require('./../Constants/language');
 
 class Create extends Component {
     constructor(props) {
@@ -24,7 +26,6 @@ class Create extends Component {
             account_addr: '',
             private_key: '',
             keystore_addr: '',
-            checked: false,
             openSnack: false,
             snackMessage: '',
             isLoading: null,
@@ -52,7 +53,7 @@ class Create extends Component {
     }
 
     renderProgress() {
-        const { refresh } = styles;
+        const { refresh } = createPagestyles;
         return (
             <RefreshIndicator
                 size={50}
@@ -71,24 +72,25 @@ class Create extends Component {
         var that = this;
         if (this.state.password === this.state.confirmPwd) {
             if (isOnline()) {
-                createAccount(password, function (err, account) {
-                    if (err) sendError(err);
-                    else {
-                        that.setState({
-                            account_addr: account.account_addr,
-                            private_key: account.private_key,
-                            keystore_addr: account.keystore_addr,
-                            isLoading: false
-                        })
-                    }
-                });
+                this.props.createAccount(password)
+                    .then(() => {
+                        that.props.setComponent('terms')
+                    })
             }
             else {
-                this.setState({ openSnack: true, isLoading: false, snackMessage: lang[this.props.lang].CheckInternet })
+                this.setState({
+                    openSnack: true,
+                    isLoading: false,
+                    snackMessage: lang[this.props.lang].CheckInternet
+                })
             }
         }
         else {
-            this.setState({ openSnack: true, isLoading: false, snackMessage: lang[this.props.lang].DidNotMatch })
+            this.setState({
+                openSnack: true,
+                isLoading: false,
+                snackMessage: lang[this.props.lang].DidNotMatch
+            })
         }
     }
 
@@ -111,20 +113,28 @@ class Create extends Component {
     }
 
     _store = () => {
-        this.setState({ isRestoredisabled: true, snackOpen: true, openSnackMessage: lang[this.props.lang].CheckCre })
+        this.setState({ 
+            isRestoredisabled: true, 
+            snackOpen: true, 
+            openSnackMessage: lang[this.props.lang].CheckCre 
+        })
         var keystore = this.state.keystore;
         var password = this.state.keystorePassword;
         var that = this;
         setTimeout(function () {
             that.getPrivateKey(keystore, password, function (err, private_key) {
                 if (err) {
-                    that.setState({ snackOpen: false, openSnack: true, snackMessage: err.message })
+                    that.setState({ 
+                        snackOpen: false, 
+                        openSnack: true, 
+                        snackMessage: err.message 
+                    })
                 }
                 else {
                     uploadKeystore(keystore, function (err) {
                         if (err) sendError(err);
                         else {
-                            that.set('dashboard');
+                            that.props.setComponent('dashboard');
                         }
                     })
                 }
@@ -133,288 +143,128 @@ class Create extends Component {
     }
     render() {
         let language = this.props.lang;
-        return (
-            <MuiThemeProvider>
-                <div>
-                    <Toolbar style={{ backgroundColor: '#2f3245', height: 70 }}>
-                        <ToolbarGroup>
-                            <img src={'../src/Images/logo.svg'} alt="Logo" style={{ height: 50, width: 50 }} />
-                            <p style={styles.toolbarTitle}></p>
-                        </ToolbarGroup>
-                    </Toolbar>
-                    {this.state.private_key === '' ?
-                        <div style={styles.createDiv}>
-                            <div style={{ marginTop: '2%' }}>
-                                <span style={styles.headingCreate}>{lang[language].CreateAUID}</span>
-                                <span data-tip data-for="createID" style={styles.questionMark}>?</span>
-                                <ReactTooltip id="createID" place="bottom">
-                                    <span>
-                                        {lang[language].CreateTooltip}
-                                    </span>
-                                </ReactTooltip>
-                            </div>
-                            <hr width="50%" align="left" size="3" noshade style={{ backgroundColor: 'rgb(83, 45, 145)' }} />
-                            <Paper zDepth={2} style={styles.textBoxPaper}>
-                                <TextField
-                                    hintText={lang[language].PasswordAUID}
-                                    hintStyle={styles.textFieldCreateHint}
-                                    type="password"
-                                    underlineShow={false}
-                                    onChange={(event, password) => { this.setState({ password: password }) }}
-                                    style={styles.textFieldCreate}
-                                />
-                            </Paper>
-                            <Paper zDepth={2} style={styles.textBoxPaper}>
-                                <TextField
-                                    hintText={lang[language].ConfirmPwd}
-                                    hintStyle={styles.textFieldCreateHint}
-                                    type="password"
-                                    underlineShow={false}
-                                    onChange={(event, password) => { this.setState({ confirmPwd: password }) }}
-                                    style={styles.textFieldCreate}
-                                />
-                            </Paper>
-                            <RaisedButton label={lang[language].Create}
-                                labelStyle={styles.buttonLabel}
-                                disabled={this.state.password === '' ? true : false}
-                                onClick={this._createAccount}
-                                buttonStyle={styles.buttonCreate}
-                                style={styles.createStyle} />
-                            {this.state.isLoading === true ? this.renderProgress() : ''}
-                            <p style={{ fontSize: 12, marginLeft: '3%' }}>(Or)</p>
-                            <Paper zDepth={2} style={styles.bluePaper}>
-                                <div style={{ padding: '3%' }}>
-                                    <RaisedButton
-                                        label={lang[language].SelectKeystore}
-                                        labelStyle={styles.buttonLabel}
-                                        onClick={() => { document.getElementById('filepicker').click() }}
-                                        buttonStyle={this.state.file === '' ? styles.buttonCreate : styles.buttonRaisedKeystore}
-                                        disabled={this.state.file === '' ? false : true} />
-                                    {this.state.file === '' ?
-                                        <div></div>
-                                        :
-                                        <Chip onRequestDelete={() => {
-                                            this.setState({ file: '', keystore: '', keystorePassword: '' })
-                                        }} style={{ margin: '2%' }} >
-                                            {this.state.file}
-                                        </Chip>
-                                    }
-                                    <Paper zDepth={2} style={styles.keyTextBoxPaper}>
-                                        <TextField
-                                            hintText={lang[language].KeyPass}
-                                            hintStyle={{ fontSize: 12 }}
-                                            type="password"
-                                            underlineShow={false}
-                                            onChange={(event, password) => { this.setState({ keystorePassword: password, isRestoredisabled: false }) }}
-                                            style={styles.textFieldCreate}
-                                        />
-                                    </Paper>
-                                    <RaisedButton
-                                        label={lang[language].RestoreKeystore}
-                                        labelStyle={{ color: 'white', textTransform: 'none' }}
-                                        disabled={this.state.file === '' || this.state.keystorePassword === '' ||
-                                            this.state.isRestoredisabled ? true : false}
-                                        onClick={this._store.bind(this)}
-                                        buttonStyle={this.state.file === '' || this.state.keystorePassword === '' ||
-                                            this.state.isRestoredisabled ?
-                                            styles.buttonRaisedKeystore : styles.buttonCreate}
-                                        style={{ marginTop: '3%' }} />
-                                    <input type="file" style={{ display: 'none' }} id="filepicker"
-                                        onChange={this.onChange.bind(this)} />
-                                </div>
-                            </Paper>
+        return <MuiThemeProvider>
+            <div>
+                <Toolbar style={createPagestyles.toolbarStyle}>
+                    <ToolbarGroup>
+                        <img src={'../src/Images/logo.svg'} alt="Logo" style={createPagestyles.toolbarImage} />
+                        <p style={createPagestyles.toolbarTitle}></p>
+                    </ToolbarGroup>
+                </Toolbar>
+                {this.state.private_key === '' ?
+                    <div style={createPagestyles.createDiv}>
+                        <div style={createPagestyles.m_t_5}>
+                            <span style={createPagestyles.headingCreate}>{lang[language].CreateAUID}</span>
+                            <span data-tip data-for="createID" style={createPagestyles.questionMark}>?</span>
+                            <ReactTooltip id="createID" place="bottom">
+                                <span>
+                                    {lang[language].CreateTooltip}
+                                </span>
+                            </ReactTooltip>
                         </div>
-                        :
-                        <div style={{ marginLeft: '5%', marginRight: '5%' }}>
-                            <h3 style={styles.headingCreate}>{lang[language].BeCareful}</h3>
-                            <hr width="50%" align="left" size="3" noshade style={{ backgroundColor: 'rgb(83, 45, 145)' }} />
-                            <p style={styles.copyHeading}>{lang[language].CopyKeys}</p>
-                            <div style={styles.detailsDiv}>
-                                <p style={styles.detailHeadBold}>{lang[language].YourAddress}:</p>
-                                <p style={styles.detailVal}>{this.state.account_addr}</p>
-                                <p style={styles.detailHeadBold}>{lang[language].PrivateKey}:</p><p
-                                    style={styles.detailVal}>{this.state.private_key}
-                                    <CopyToClipboard text={this.state.private_key}
-                                        onCopy={() => this.setState({
-                                            snackMessage: lang[language].Copied,
-                                            openSnack: true
-                                        })}>
-                                        <img src={'../src/Images/download.jpeg'}
-                                            alt="Copy"
-                                            data-tip data-for="copyImage"
-                                            style={styles.clipBoard} />
-                                    </CopyToClipboard></p>
-                                <ReactTooltip id="copyImage" place="bottom">
-                                    <span>{lang[language].Copy}</span>
-                                </ReactTooltip>
-                                <p style={styles.detailHeadBold}>{lang[language].KeyLocation}:</p>
-                                <p style={styles.detailVal}>{this.state.keystore_addr}</p>
+                        <hr width="50%" align="left" size="3" noshade style={createPagestyles.hr_color} />
+                        <Paper zDepth={2} style={createPagestyles.textBoxPaper}>
+                            <TextField
+                                hintText={lang[language].PasswordAUID}
+                                hintStyle={createPagestyles.textFieldCreateHint}
+                                type="password"
+                                underlineShow={false}
+                                onChange={(event, password) => { this.setState({ password: password }) }}
+                                style={createPagestyles.textFieldCreate}
+                            />
+                        </Paper>
+                        <Paper zDepth={2} style={createPagestyles.textBoxPaper}>
+                            <TextField
+                                hintText={lang[language].ConfirmPwd}
+                                hintStyle={createPagestyles.textFieldCreateHint}
+                                type="password"
+                                underlineShow={false}
+                                onChange={(event, password) => { this.setState({ confirmPwd: password }) }}
+                                style={createPagestyles.textFieldCreate}
+                            />
+                        </Paper>
+                        <RaisedButton label={lang[language].Create}
+                            labelStyle={createPagestyles.buttonLabel}
+                            disabled={this.state.password === '' ? true : false}
+                            onClick={this._createAccount}
+                            buttonStyle={createPagestyles.buttonCreate}
+                            style={createPagestyles.createStyle} />
+                        {this.state.isLoading === true ? this.renderProgress() : ''}
+                        <p style={createPagestyles.f_m_l_3}>(Or)</p>
+                        <Paper zDepth={2} style={createPagestyles.bluePaper}>
+                            <div style={createPagestyles.p_3}>
+                                <RaisedButton
+                                    label={lang[language].SelectKeystore}
+                                    labelStyle={createPagestyles.buttonLabel}
+                                    onClick={() => { document.getElementById('filepicker').click() }}
+                                    buttonStyle={this.state.file === '' ? createPagestyles.buttonCreate : createPagestyles.buttonRaisedKeystore}
+                                    disabled={this.state.file === '' ? false : true} />
+                                {this.state.file === '' ?
+                                    <div></div>
+                                    :
+                                    <Chip onRequestDelete={() => {
+                                        this.setState({ file: '', keystore: '', keystorePassword: '' })
+                                    }} style={createPagestyles.m_2} >
+                                        {this.state.file}
+                                    </Chip>
+                                }
+                                <Paper zDepth={2} style={createPagestyles.keyTextBoxPaper}>
+                                    <TextField
+                                        hintText={lang[language].KeyPass}
+                                        hintStyle={createPagestyles.f_12}
+                                        type="password"
+                                        underlineShow={false}
+                                        onChange={(event, password) => { this.setState({ keystorePassword: password, isRestoredisabled: false }) }}
+                                        style={createPagestyles.textFieldCreate}
+                                    />
+                                </Paper>
+                                <RaisedButton
+                                    label={lang[language].RestoreKeystore}
+                                    labelStyle={createPagestyles.c_t_t}
+                                    disabled={this.state.file === '' || this.state.keystorePassword === '' ||
+                                        this.state.isRestoredisabled ? true : false}
+                                    onClick={this._store.bind(this)}
+                                    buttonStyle={this.state.file === '' || this.state.keystorePassword === '' ||
+                                        this.state.isRestoredisabled ?
+                                        createPagestyles.buttonRaisedKeystore : createPagestyles.buttonCreate}
+                                    style={{ marginTop: '3%' }} />
+                                <input type="file" style={{ display: 'none' }} id="filepicker"
+                                    onChange={this.onChange.bind(this)} />
                             </div>
-                            <br /><br />
-                            <Checkbox
-                                label={lang[language].YesUnderstand}
-                                labelStyle={styles.checkboxLabel}
-                                checked={this.state.checked}
-                                onCheck={() => {
-                                    this.setState((oldState) => {
-                                        return {
-                                            checked: !oldState.checked,
-                                        };
-                                    });
-                                }}
-                            />
-                            <br /><br />
-                            <RaisedButton
-                                label={lang[language].GoToDash}
-                                labelStyle={styles.yesButtonLabel}
-                                buttonStyle={this.state.checked ? styles.yesButton : styles.disabledButton}
-                                disabled={this.state.checked ? false : true}
-                                onClick={() => { this.set('dashboard') }}
-                            />
-                        </div>
-                    }
-                    <Snackbar
-                        open={this.state.openSnack}
-                        message={this.state.snackMessage}
-                        autoHideDuration={2000}
-                        onRequestClose={this.snackRequestClose}
-                        style={{ marginBottom: '1%' }}
-                    />
-                    <Snackbar
-                        open={this.state.snackOpen}
-                        message={this.state.openSnackMessage}
-                        style={{ marginBottom: '1%' }}
-                    />
-                </div>
-            </MuiThemeProvider>
-        );
+                        </Paper>
+                    </div>
+                    :
+                    this.props.setComponent('terms')
+                }
+                <Snackbar
+                    open={this.state.openSnack}
+                    message={this.state.snackMessage}
+                    autoHideDuration={2000}
+                    onRequestClose={this.snackRequestClose}
+                    style={createPagestyles.m_b_1}
+                />
+                <Snackbar
+                    open={this.state.snackOpen}
+                    message={this.state.openSnackMessage}
+                    style={createPagestyles.m_b_1}
+                />
+            </div>
+        </MuiThemeProvider>
     }
 }
 
-const styles = {
-    toolbarTitle: {
-        color: 'white',
-        marginLeft: 10,
-        fontSize: 14,
-        fontWeight: '600'
-    },
-    yesButtonLabel: {
-        textTransform: 'none',
-        color: 'white',
-        paddingRight: 25,
-        paddingLeft: 25,
-        fontWeight: '600'
-    },
-    yesButton: {
-        backgroundColor: '#2f3245',
-        height: '30px',
-        lineHeight: '30px'
-    },
-    disabledButton: {
-        backgroundColor: '#bdbdbd',
-        height: '30px',
-        lineHeight: '30px'
-    },
-    createDiv: {
-        marginLeft: '7%',
-        marginRight: '7%'
-    },
-    headingCreate: {
-        color: '#2f3245',
-        fontSize: 14,
-        marginBottom: 0,
-        marginTop: '2%'
-    },
-    textBoxPaper: {
-        height: 35,
-        width: '100%',
-        backgroundColor: 'rgba(229, 229, 229, 0.66)',
-        marginTop: '3%'
-    },
-    keyTextBoxPaper: {
-        height: 35,
-        width: '80%',
-        marginTop: '3%'
-    },
-    textFieldCreateHint: {
-        fontSize: 12,
-        color: '#2f3245'
-    },
-    textFieldCreate: {
-        width: '85%',
-        paddingLeft: '5%',
-        height: 40,
-        lineHeight: '18px'
-    },
-    buttonLabel: {
-        color: 'white',
-        textTransform: 'none'
-    },
-    buttonRaisedKeystore: {
-        backgroundColor: 'rgba(128, 128, 128, 0.66)',
-        height: '30px',
-        lineHeight: '30px',
-        cursor: 'not-allowed'
-    },
-    buttonCreate: {
-        backgroundColor: 'rgba(83, 45, 145, 0.71)',
-        height: '30px',
-        lineHeight: '30px'
-    },
-    createStyle: {
-        marginTop: '5%',
-        marginBottom: '3%'
-    },
-    bluePaper: {
-        backgroundColor: 'rgba(181, 216, 232, 0.32)',
-        marginTop: '2%'
-    },
-    copyHeading: {
-        color: 'rgb(240, 94, 9)',
-        fontSize: 12,
-        fontWeight: 800
-    },
-    detailsDiv: {
-        color: 'rgba(0, 0, 0, 0.66)',
-        fontSize: 12,
-        marginBottom: '2%',
-        marginTop: '2%'
-    },
-    detailHeadBold: {
-        marginTop: '2%',
-        fontWeight: 'bold'
-    },
-    detailVal: {
-        fontSize: '12px',
-        wordBreak: 'break-all',
-        marginTop: 0
-    },
-    clipBoard: {
-        height: 20,
-        width: 20,
-        cursor: 'pointer',
-        marginLeft: 2
-    },
-    checkboxLabel: {
-        color: 'rgb(240, 94, 9)',
-        fontSize: 13,
-        fontWeight: 800
-    },
-    refresh: {
-        display: 'inline-block',
-        position: 'relative',
-        // justifyContent: 'center',
-        // alignItems: 'center'
-    },
-    questionMark: {
-        marginLeft: 3,
-        fontSize: 12,
-        borderRadius: '50%',
-        backgroundColor: '#4d9bb9',
-        paddingLeft: 5,
-        paddingRight: 5,
-        color: 'white'
+function mapStateToProps(state) {
+    return {
+        lang: state.setLanguage,
+        createAccountResponse: state.createAccount
     }
 }
 
-export default Create;
+function mapDispatchToActions(dispatch) {
+    return bindActionCreators({
+        createAccount: createAccount,
+        setComponent: setComponent
+    }, dispatch)
+}
+
+export default connect(mapStateToProps, mapDispatchToActions)(Create);
