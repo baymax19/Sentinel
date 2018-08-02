@@ -4,7 +4,7 @@ import Create from './Components/Create';
 import Dashboard from './Components/Dashboard';
 import Authenticate from './Components/Authenticate';
 import { checkKeystore } from './Actions/authentication.action';
-import { defaultPageStyle } from './Assets/styles';
+import { defaultPageStyle } from './Assets/authenticate.styles';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { setLanguage, setComponent } from './Actions/authentication.action';
