@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { Dialog, FlatButton, TextField, Snackbar } from 'material-ui';
 import { sendError, setComponent, getPrivateKey } from '../Actions/authentication.action';
-import { authenticateStyles } from './../Assets/styles'
+import { authenticateStyles } from './../Assets/authenticate.styles'
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 let lang = require('./../Constants/language');

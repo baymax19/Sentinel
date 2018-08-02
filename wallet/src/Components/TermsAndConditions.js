@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import { createPagestyles } from './../Assets/styles';
+import { createPagestyles } from './../Assets/authenticate.styles';
 import { connect } from 'react-redux';
 import ReactTooltip from 'react-tooltip';
 import { bindActionCreators } from 'redux';

@@ -10,7 +10,7 @@ import { isOnline } from './../Utils/UserConfig';
 import { uploadKeystore } from './../Utils/Keystore';
 import ReactTooltip from 'react-tooltip';
 import { setTimeout } from 'timers';
-import { createPagestyles } from './../Assets/styles';
+import { createPagestyles } from './../Assets/authenticate.styles';
 import { connect } from 'react-redux';
 let keythereum = require('keythereum');
 let lang = require('./../Constants/language');
