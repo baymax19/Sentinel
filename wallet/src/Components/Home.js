@@ -9,11 +9,6 @@ import { bindActionCreators } from 'redux';
 let lang = require('./../Constants/language');
 
 class Home extends Component {
-    constructor(props) {
-        super(props);
-        this.set = this.props.set;
-    }
-
     componentDidCatch(error, info) {
         sendError(error);
     }

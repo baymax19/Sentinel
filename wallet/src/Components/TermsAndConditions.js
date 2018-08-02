@@ -22,7 +22,6 @@ class TermsAndConditions extends Component {
             keystore_addr: '',
             isLoading: null
         }
-        this.set = this.props.set;
     }
 
     componentDidCatch(error, info) {

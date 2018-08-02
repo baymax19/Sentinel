@@ -33,7 +33,6 @@ class Create extends Component {
             snackOpen: false,
             openSnackMessage: ''
         }
-        this.set = this.props.set;
     }
 
     componentDidCatch(error, info) {

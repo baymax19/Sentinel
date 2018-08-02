@@ -19,7 +19,6 @@ class Authenticate extends Component {
             statusMessage: '',
             isDisabled: false
         }
-        this.set = this.props.set;
     }
 
     closeWindow = () => {
@@ -87,7 +86,7 @@ class Authenticate extends Component {
                 <div>
                     <Dialog
                         title={lang[language].KeystoreLogin}
-                        titleStyle={{ fontSize: 16 }}
+                        titleStyle={authenticateStyles.f_s_16}
                         actions={actions}
                         modal={true}
                         open={this.state.showPopUp}
@@ -95,7 +94,7 @@ class Authenticate extends Component {
                         <TextField
                             autoFocus={true}
                             hintText={lang[language].KeyPass}
-                            hintStyle={{ fontSize: 14 }}
+                            hintStyle={authenticateStyles.f_s_14}
                             type="password"
                             onChange={(event, password) => { this.setState({ password: password }) }}
                             onKeyPress={(ev) => { if (ev.key === 'Enter') this.submitPassword() }}
