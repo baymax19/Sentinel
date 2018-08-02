@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { setLanguage, setComponent } from './Actions/authentication.action';
 import TermsAndConditions from './Components/TermsAndConditions';
-import { readFile } from './Utils/Ethereum';
+import { readFile } from './Utils/Keystore';
 import { KEYSTORE_FILE } from './Actions/authentication.action';
 const { ipcRenderer } = window.require('electron');
 

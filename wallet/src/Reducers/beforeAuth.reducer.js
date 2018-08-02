@@ -1,5 +1,5 @@
 import * as types from "../Constants/action.names";
-import { createFile } from './../Utils/Ethereum';
+import { createFile } from './../Utils/Keystore';
 const electron = window.require('electron');
 const remote = electron.remote;
 const SENT_DIR = getUserHome() + '/.sentinel';

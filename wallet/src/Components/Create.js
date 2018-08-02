@@ -5,7 +5,9 @@ import {
     Chip, Paper, Snackbar, RefreshIndicator
 } from 'material-ui';
 import { bindActionCreators } from 'redux';
-import { createAccount, uploadKeystore, isOnline, sendError, setComponent } from '../Actions/authentication.action';
+import { createAccount, sendError, setComponent } from '../Actions/authentication.action';
+import { isOnline } from './../Utils/UserConfig';
+import { uploadKeystore } from './../Utils/Keystore';
 import ReactTooltip from 'react-tooltip';
 import { setTimeout } from 'timers';
 import { createPagestyles } from './../Assets/styles';
@@ -112,10 +114,10 @@ class Create extends Component {
     }
 
     _store = () => {
-        this.setState({ 
-            isRestoredisabled: true, 
-            snackOpen: true, 
-            openSnackMessage: lang[this.props.lang].CheckCre 
+        this.setState({
+            isRestoredisabled: true,
+            snackOpen: true,
+            openSnackMessage: lang[this.props.lang].CheckCre
         })
         var keystore = this.state.keystore;
         var password = this.state.keystorePassword;
@@ -123,10 +125,10 @@ class Create extends Component {
         setTimeout(function () {
             that.getPrivateKey(keystore, password, function (err, private_key) {
                 if (err) {
-                    that.setState({ 
-                        snackOpen: false, 
-                        openSnack: true, 
-                        snackMessage: err.message 
+                    that.setState({
+                        snackOpen: false,
+                        openSnack: true,
+                        snackMessage: err.message
                     })
                 }
                 else {

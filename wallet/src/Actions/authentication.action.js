@@ -1,16 +1,17 @@
 
 import { B_URL } from './../Constants/constants';
 import * as types from './../Constants/action.names';
-import { createFile, readFile } from './../Utils/Ethereum';
+import * as URL from './../Constants/api.routes'
+import { readFile } from './../Utils/Keystore';
 import { lang } from './../Constants/language';
 import axios from 'axios';
+
 const keythereum = require('keythereum');
-const fs = window.require('fs');
-var async = window.require('async');
 const electron = window.require('electron');
 const remote = electron.remote;
 const SENT_DIR = getUserHome() + '/.sentinel';
 var ACCOUNT_ADDR = '';
+
 export const KEYSTORE_FILE = SENT_DIR + '/keystore';
 
 function getUserHome() {
@@ -57,31 +58,11 @@ export function setComponent(component) {
     }
 }
 
-export const isOnline = function () {
-    try {
-        if (window.navigator.onLine) {
-            return true
-        }
-        else {
-            return false
-        }
-    } catch (Err) {
-        sendError(Err);
-    }
-}
-
-export const uploadKeystore = (keystore, cb) => {
-    try {
-        cb(null, createFile(KEYSTORE_FILE, keystore))
-    } catch (Err) {
-        sendError(Err);
-    }
-}
 
 export const createAccount = (password) => {
     try {
         let request = axios({
-            url: '/client/account',
+            url: URL.CREATE_ACCOUNT,
             method: 'POST',
             headers: {
                 'Access-Control-Allow-Origin': '*',
