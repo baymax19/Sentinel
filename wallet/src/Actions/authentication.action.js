@@ -81,28 +81,6 @@ export const createAccount = (password) => {
     }
 }
 
-export function getFreeAmount(account_addr, cb) {
-    try {
-        fetch(B_URL + '/dev/free', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                account_addr: account_addr
-            })
-        }).then(function (response) {
-            response.json().then(function (response) {
-                console.log("Free res:", response)
-                cb(response.message)
-            })
-        });
-    } catch (Err) {
-        sendError(Err);
-    }
-}
-
 export function getPrivateKey(password, language, cb) {
     readFile(KEYSTORE_FILE, function (err, data) {
         if (err) cb(err, null);

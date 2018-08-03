@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import Home from './Components/Home';
 import Create from './Components/Create';
-// import Dashboard from './Components/Dashboard';
-import Receive from './Components/Receive';
 import Authenticate from './Components/Authenticate';
 import { defaultPageStyle } from './Assets/authenticate.styles';
 import { connect } from 'react-redux';
@@ -11,6 +9,7 @@ import { setLanguage, setComponent } from './Actions/authentication.action';
 import TermsAndConditions from './Components/TermsAndConditions';
 import { readFile } from './Utils/Keystore';
 import { KEYSTORE_FILE } from './Actions/authentication.action';
+import Dashboard from './Components/Dashboard';
 const { ipcRenderer } = window.require('electron');
 
 class App extends Component {
@@ -56,7 +55,7 @@ class App extends Component {
                 }
             case 'dashboard':
                 {
-                    return <Receive />
+                    return <Dashboard />
                 }
             case 'home':
                 {
